@@ -1,0 +1,8 @@
+{
+  "rabbitmq_port": "5672",
+  "rabbit_user": "user01",
+  "rabbit_pwd": "user01",
+  "rabbit_vhost": "app",
+  "rabbit_exchange": "exchange_app",
+  "rabbit_queue": "polling"
+}

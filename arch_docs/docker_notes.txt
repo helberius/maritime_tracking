@@ -53,6 +53,9 @@ docker run -d --hostname my-rabbit --name container_rabbit --network maritime_ap
 
 docker run -d --hostname my-rabbit --name container_rabbit --network maritime_app --ip 192.168.0.16 --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
 
+
+docker run -d --hostname my-rabbit --name container_rabbit --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
+
 #############################
 
 
@@ -77,15 +80,17 @@ docker volume create vol_rabbitmq
 
 #############################
 create a docker image from a dockerfile
-docker build /mnt/disk2/experiments/maritime_tracking/docker_images/img_python -t app_tracking:1.0.0
 
 
-docker run -d --hostname polling_quakes --name container_polling_quakes --network maritime_app --ip 192.168.0.32 app_tracking:1.0.2
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.23
+
+docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" app_tracking:1.0.23
+
+docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" -e "RABBIT_HOST=172.17.0.2" app_tracking:1.0.23
 
 
-docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.22
-docker rm container_polling_quakes
-docker run -ti --hostname polling_quakes --name container_polling_quakes --network maritime_app --ip 192.168.0.32 -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" app_tracking:1.0.22
+
+
 
 #############################
 

@@ -1,7 +1,6 @@
 {
   "polling_source": "https://meri.digitraffic.fi/api/v1/locations/latest",
   "element_to_poll": "features",
-  "rabbitmq_host": "172.17.0.2",
   "rabbitmq_port": "5672",
   "rabbit_user": "user01",
   "rabbit_pwd": "user01",
