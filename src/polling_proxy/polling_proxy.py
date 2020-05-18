@@ -1,9 +1,20 @@
 from polling_proxy.PollingProxy import PollingProxy
+import sys
+import time
 
 if __name__ == "__main__":
-    # polling_proxy_digitraffic = PollingProxy("./configuration/digitraffic.json")
-    # print(str(polling_proxy_digitraffic.__dict__))
+    print(str(sys.argv))
+    try:
+        path_conf_source = sys.argv[1]
+        periodicity = sys.argv[2]
+        periodicity_seconds = float(periodicity) *60
+        polling_proxy = PollingProxy(path_conf_source)
+        while True:
+            polling_proxy.get_data()
+            time.sleep(periodicity_seconds)
+    except Exception as err:
+        print(repr(err))
 
-    polling_proxy_quakes_usgs = PollingProxy("./configuration/usgs_quakes_all_hour.json")
+    #polling_proxy_quakes_usgs = PollingProxy("./configuration/usgs_quakes_all_hour.json")
 
     #polling_proxy_digitraffic = PollingProxy("./configuration/digitraffic.json")

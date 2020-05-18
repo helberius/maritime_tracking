@@ -47,7 +47,9 @@ docker run -d --hostname my-rabbit --name container_rabbit --ip 192.168.0.16 -p 
 
 #############################
 To create the container rabbitmq (only one time)
-docker run -d --hostname my-rabbit --name container_rabbit --ip 192.168.0.16 -p 8080:15672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
+docker run -d --hostname my-rabbit --name container_rabbit --ip 192.168.0.16 -p 15672:15672 -p 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
+
+docker run -d --hostname my-rabbit --name container_rabbit --network maritime_app --ip 192.168.0.16 -p 15672:15672 -p 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
 #############################
 
 
@@ -67,3 +69,12 @@ docker ps -a
 create volume
 docker volume create vol_rabbitmq
 
+
+
+
+#############################
+create a docker image from a dockerfile
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/img_python -t app_tracking:1.0.0
+
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.1
+#############################
