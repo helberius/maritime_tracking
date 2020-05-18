@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import sys
 import pika
@@ -8,24 +9,19 @@ import socket
 class PollingProxy:
     rabbit_connection = None
 
-    def __init__(self, conf_json):
-        ls_development_hosts = ["helbert-Thinkpad-T430"]
+    def __init__(self, conf_json, rabbitmq_host):
         try:
             with open(conf_json) as json_file:
                 data = json.load(json_file)
                 print(data)
                 for e in data:
                     setattr(self, e, data[e])
-            hostname = socket.gethostname()
-            if hostname in ls_development_hosts :
-                self.rabbitmq_host = "localhost"
+            self.rabbitmq_host = rabbitmq_host
 
         except Exception as err:
             print('Error while initializing the PollingProxy. I am exiting')
             print(repr(err))
             sys.exit(0)
-
-
 
     def get_data(self):
         print('GetData')

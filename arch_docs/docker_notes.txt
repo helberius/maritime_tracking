@@ -50,6 +50,9 @@ To create the container rabbitmq (only one time)
 docker run -d --hostname my-rabbit --name container_rabbit --ip 192.168.0.16 -p 15672:15672 -p 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
 
 docker run -d --hostname my-rabbit --name container_rabbit --network maritime_app --ip 192.168.0.16 -p 15672:15672 -p 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
+
+docker run -d --hostname my-rabbit --name container_rabbit --network maritime_app --ip 192.168.0.16 --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq  rabbitmq:3.8.3-management-alpine
+
 #############################
 
 
@@ -76,5 +79,15 @@ docker volume create vol_rabbitmq
 create a docker image from a dockerfile
 docker build /mnt/disk2/experiments/maritime_tracking/docker_images/img_python -t app_tracking:1.0.0
 
-docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.1
+
+docker run -d --hostname polling_quakes --name container_polling_quakes --network maritime_app --ip 192.168.0.32 app_tracking:1.0.2
+
+
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.22
+docker rm container_polling_quakes
+docker run -ti --hostname polling_quakes --name container_polling_quakes --network maritime_app --ip 192.168.0.32 -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" app_tracking:1.0.22
+
 #############################
+
+python: can't open file '/app_tracking/src/polling_proxy/polling_proxy.py': [Errno 2] No such file or directory
+
