@@ -1,23 +1,23 @@
 import json
 import sys
 import pika
+import os
 
 class DataProcessor:
     rabbit_connection = None
     channel = None
 
 
-    def __init__(self, conf_json, rabbitmq_host):
+    def __init__(self, conf_json):
         try:
             with open(conf_json) as json_file:
                 data = json.load(json_file)
                 print(data)
                 for e in data:
                     setattr(self, e, data[e])
-            self.rabbitmq_host = rabbitmq_host
+            self.rabbitmq_host = os.environ['RABBIT_HOST']
             self.open_rabbit_connection()
             self.get_messages()
-
 
         except Exception as err:
             print('Error while initializing the DataProcessor. I am exiting')
