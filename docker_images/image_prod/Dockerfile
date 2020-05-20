@@ -5,8 +5,8 @@ ENV PATH /opt/conda/bin:$PATH
 
 ENV POLLING_SCRIPT '/app_tracking'
 ENV POLLING_SOURCE '/app_tracking'
-ENV POLLING_PERIODICITY '5'
 ENV RABBIT_HOST 'rabbit_host'
+ENV AUTOCLONING 'False'
 
 RUN apt-get update       
 RUN apt-get install -y git
