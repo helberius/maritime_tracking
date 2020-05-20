@@ -9,7 +9,7 @@ if __name__ == "__main__":
     try:
         bool_autocloning = bool(os.environ['AUTOCLONING'])
         if bool_autocloning:
-            ls_parameters=['git','clone','https://github.com/helberius/maritime_tracking.git']
-            subprocess.call(ls_parameters, shell=False)
+            ls_parameters=['git','pull','https://github.com/helberius/maritime_tracking.git']
+            subprocess.call(ls_parameters, shell=False, cwd="/maritime_tracking")
     except Exception as err:
         print(repr(err))
