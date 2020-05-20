@@ -5,18 +5,24 @@ import pika
 import requests
 import os
 import socket
+import time
 
 class PollingProxy:
     rabbit_connection = None
 
-    def __init__(self, conf_json, rabbitmq_host):
+    def __init__(self, conf_json):
         try:
             with open(conf_json) as json_file:
                 data = json.load(json_file)
                 print(data)
                 for e in data:
                     setattr(self, e, data[e])
-            self.rabbitmq_host = rabbitmq_host
+            self.rabbitmq_host = os.environ['RABBIT_HOST']
+            self.open_rabbit_connection()
+            periodicity_seconds= self.periodicity *60
+            while True:
+                self.get_data()
+                time.sleep(periodicity_seconds)
 
         except Exception as err:
             print('Error while initializing the PollingProxy. I am exiting')
@@ -59,6 +65,7 @@ class PollingProxy:
         except Exception as err:
             print('##########################################')
             print('Error while creating the connection')
+            print(self.rabbitmq_host , self.rabbitmq_port, self.rabbit_vhost)
             print(repr(err))
             print('##########################################')
             sys.exit(0)

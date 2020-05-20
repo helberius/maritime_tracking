@@ -7,5 +7,6 @@
   "rabbit_vhost": "app",
   "rabbit_exchange": "exchange_app",
   "rabbit_queue": "polling",
-  "data_source": "usgs_quakes_past_hour"
+  "data_source": "usgs_quakes_past_hour",
+  "periodicity": 2
 }

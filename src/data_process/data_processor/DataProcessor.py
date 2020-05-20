@@ -26,7 +26,6 @@ class DataProcessor:
 
 
     def open_rabbit_connection(self):
-
         try:
             credentials = pika.PlainCredentials(self.rabbit_user, self.rabbit_pwd)
 
@@ -37,7 +36,6 @@ class DataProcessor:
                 credentials=credentials,
                 virtual_host=self.rabbit_vhost
             )
-
             self.rabbit_connection = pika.BlockingConnection(connection_parameters)
 
 
@@ -49,8 +47,10 @@ class DataProcessor:
             sys.exit(0)
 
     def on_message(self,channel, method_frame, header_frame, body):
-        print(body)
+
         json_msg = json.loads(body)
+        print(json_msg)
+        print(json_msg['data_source'])
         self.channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
     def get_messages(self):

@@ -74,8 +74,9 @@ docker ps -a
 
 create volume
 docker volume create vol_rabbitmq
-
-
+docker volume create vol_elastic_master
+docker volume create vol_elastic_node1
+docker volume create vol_elastic_node2
 
 
 #############################
@@ -86,7 +87,7 @@ docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking
 
 docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" app_tracking:1.0.23
 
-docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" -e "RABBIT_HOST=172.17.0.2" app_tracking:1.0.23
+docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=1" -e "RABBIT_HOST=172.17.0.2" app_tracking:1.0.23
 
 
 
@@ -94,5 +95,64 @@ docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POL
 
 #############################
 
-python: can't open file '/app_tracking/src/polling_proxy/polling_proxy.py': [Errno 2] No such file or directory
+
+python data_process.py ../configuration/data_processor.json 172.17.0.2
+#############################
+
+
+docker run -d --name elastic-master --mount source=vol_elastic_master,target=/usr/share/elasticsearch/data blacktop/elasticsearch:latest
+docker run -d --name elastic-client -p 9200:9200 --link elastic-master --mount source=vol_elastic_client,target=/usr/share/elasticsearch/data blacktop/elasticsearch:latest
+docker run -d --name elastic-data-1 --link elastic-master --mount source=vol_elastic_node1,target=/usr/share/elasticsearch/data blacktop/elasticsearch:latest
+docker run -d --name elastic-data-2 --link elastic-master --mount source=vol_elastic_node2,target=/usr/share/elasticsearch/data blacktop/elasticsearch:latest
+docker run -d --name kibana -p 5601:5601 --link elastic-client --mount source=vol_elastic_node2,target=/usr/share/elasticsearch/data blacktop/elasticsearch:latest
+
+docker stop elastic-master
+docker stop elastic-client
+docker stop elastic-data-1
+docker stop elastic-data-2
+docker stop kibana
+docker rm elastic-master
+docker rm elastic-client
+docker rm elastic-data-1
+docker rm elastic-data-2
+docker rm kibana
+
+$ docker run -d --name kibana -p 5601:5601 --link elastic-client:elasticsearch:4.6 kibana
+
+$ docker run -d --name elastic-data-1 --link elastic-master blacktop/elasticsearch:2.4 data
+
+
+$ docker run -d --name elastic-client -p 9200:9200 --link elastic-master blacktop/elasticsearch:kopf client
+
+
+
+
+
+#############################
+Generate the certificates (only needed once):
+docker-compose -f create-certs.yml run --rm create_certs
+
+
+docker-compose up -d
+
+
+docker run --rm -v es_certs:/certs --network=es_default docker.elastic.co/elasticsearch/elasticsearch:7.7.0 curl --cacert /certs/ca/ca.crt -u elastic:foucalT0 https://es01:9200
+
+#############################
+
+
+
+
+docker pull docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elastic_single_node --mount source=es_single_node,target=/usr/share/elasticsearch/data docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+
+docker pull docker.elastic.co/kibana/kibana:7.7.0
+docker run --link elastic_single_node:elasticsearch -p 5601:5601 {docker-repo}:{version}
+
+docker run --link elastic_single_node:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana:7.7.0
+
+
+
+https://markheath.net/post/exploring-elasticsearch-with-docker
+
 

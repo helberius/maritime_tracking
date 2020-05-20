@@ -16,8 +16,8 @@ RUN cd /app_tracking
 RUN git clone https://github.com/helberius/maritime_tracking.git
 
 RUN conda install -c conda-forge pika -y
-RUN  conda install -c anaconda requests -y
+RUN conda install -c anaconda requests -y
+RUN conda install -c conda-forge geopy -y
 
-#ENTRYPOINT ["python", $POLLING_SCRIPT, $POLLING_SOURCE, $POLLING_PERIODICITY ]
-ENTRYPOINT "python" $POLLING_SCRIPT $POLLING_SOURCE $POLLING_PERIODICITY $RABBIT_HOST
+ENTRYPOINT "python" $POLLING_SCRIPT $POLLING_SOURCE 
 CMD ["/bin/bash"]
