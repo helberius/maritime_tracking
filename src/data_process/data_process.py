@@ -8,5 +8,6 @@ if __name__ == "__main__":
     except Exception as err:
         print('########################################')
         print(' Error while launching data processor')
+        print(sys.argv)
         print(repr(err))
         print('########################################')
