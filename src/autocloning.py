@@ -10,6 +10,6 @@ if __name__ == "__main__":
         bool_autocloning = bool(os.environ['AUTOCLONING'])
         if bool_autocloning:
             ls_parameters=['git','clone','https://github.com/helberius/maritime_tracking.git']
-            subprocess.cal(ls_parameters, shell=False)
+            subprocess.call(ls_parameters, shell=False)
     except Exception as err:
         print(repr(err))
