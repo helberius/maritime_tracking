@@ -1,0 +1,75 @@
+##############################################################
+	TO CREATE THE IMAGE 
+##############################################################
+
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev2
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev2 -t tracking_dev:0.1.0
+
+# installing pandas 
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev2 -t tracking_dev:0.1.1
+
+##############################################################
+	TO LAUNCH THE CONTAINER FOR RABBIT MQ
+docker run -d --hostname rabbit_host --name container_rabbit --network alpine-net --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq rabbitmq:3.8.3-management-alpine
+##############################################################
+
+##############################################################
+	TO LAUNCH THE CONTAINER FOR POLLING PROXIES
+
+docker run -dti --hostname polling_quakes --name container_polling_quakes --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/polling_quakes.sh" tracking_dev:0.1.0
+
+docker run -dti --hostname polling_digitraffic --name container_polling_digitraffic --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/polling_digitraffic.sh" tracking_dev:0.1.0
+##############################################################
+
+
+##############################################################
+	TO LAUNCH THE CONTAINER FOR DATA PROCESS
+
+docker run -dti --hostname data_process_1 --name container_data_process_1 --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.1
+
+docker run -dti --hostname data_process_2 --name container_data_process_2 --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.1
+
+docker run -dti --hostname data_process_3 --name container_data_process_3 --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.1
+
+docker run -dti --hostname data_process_4 --name container_data_process_4 --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.1
+
+docker run -dti --hostname data_process_5 --name container_data_process_5 --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.1
+
+docker run -ti --hostname data_process --name container_data_process --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking  tracking_dev:0.1.1
+
+##############################################################
+
+
+
+##############################################################
+	TO LAUNCH THE DOCKER-COMPOSE
+
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/compose_maritime_app
+docker-compose -f docker_compose_app_4.yml up -d
+docker-compose -f docker_compose_app_4.yml down -v
+
+docker-compose -f docker_compose_app_digitraffic_data_process.yml up -d
+docker-compose -f docker_compose_app_digitraffic_data_process.yml down
+
+
+
+docker-compose -f docker_compose_es.yml up -d
+docker-compose -f docker_compose_es.yml down 
+
+##############################################################
+
+# LIST INDICES IN ELASTICSEARCH CLUSTER
+http://localhost:9200/_cat/indices
+# COUNT DOCS IN INDEX INFO
+http://localhost:9200/info/_count
+
+http://localhost:9200/info/_mapping
+http://localhost:9200/info/doc/3DAYN3IBSgswc9YG6FPJ
+
+
+http://localhost:9200/info/_search?pretty=true&q=*:*
+
+
+##############################################################
+
+

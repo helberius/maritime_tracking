@@ -15,10 +15,10 @@ RUN apt-get install -y iputils-ping
 RUN mkdir /app       
 RUN cd /app        
 RUN git clone https://github.com/helberius/maritime_tracking.git
-
 RUN conda install -c conda-forge pika -y
 RUN conda install -c anaconda requests -y
 RUN conda install -c conda-forge geopy -y
+RUN conda install -c pandas -y
 
-#ENTRYPOINT "python" $POLLING_SCRIPT $POLLING_SOURCE 
+ENTRYPOINT "python" $POLLING_SCRIPT $POLLING_SOURCE 
 CMD ["/bin/bash"]

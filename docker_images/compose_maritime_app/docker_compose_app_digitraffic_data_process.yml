@@ -1,0 +1,32 @@
+version: '2.2'
+services:
+  polling_digitraffic:
+    image: tracking_dev:0.1.0
+    container_name: container_polling_digitraffic
+    environment:
+      - RABBIT_HOST=container_rabbit
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /mnt/disk2/experiments/maritime_tracking:/maritime_tracking
+    entrypoint: /maritime_tracking/src/polling_digitraffic.sh
+
+  dta_process:
+    image: tracking_dev:0.1.0
+    container_name: container_data_process
+    environment:
+      - RABBIT_HOST=container_rabbit
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /mnt/disk2/experiments/maritime_tracking:/maritime_tracking
+    entrypoint: /maritime_tracking/src/data_process.sh
+
+networks:
+  default:
+    external:
+      name: alpine-net

@@ -82,16 +82,62 @@ docker volume create vol_elastic_node2
 #############################
 create a docker image from a dockerfile
 
+docker rm container_polling_quakes
+docker rmi app_tracking:1.0.26
 
-docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.23
-
-docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/polling_proxy/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=2" app_tracking:1.0.23
-
-docker run -ti --hostname polling_quakes --name container_polling_quakes -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/configuration/usgs_quakes_all_hour.json" -e "POLLING_PERIODICITY=1" -e "RABBIT_HOST=172.17.0.2" app_tracking:1.0.23
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/app_tracking_v02 -t app_tracking:1.0.26
 
 
 
 
+
+
+############################################
+docker rmi tracking_prod:0.0.0
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/image_prod
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/image_prod -t tracking_prod:0.0.0
+
+docker rmi tracking_dev:0.0.0
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev -t tracking_dev:0.0.0
+
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev2
+docker build /mnt/disk2/experiments/maritime_tracking/docker_images/image_dev2 -t tracking_dev:0.1.0
+docker run -ti --hostname polling_quakes --name container_polling_quakes --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking tracking_dev:0.1.0
+
+docker run -d --hostname rabbit_host --name container_rabbit --network alpine-net --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq rabbitmq:3.8.3-management-alpine
+
+docker run -dti --hostname polling_quakes --name container_polling_quakes --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/polling_quakes.sh" tracking_dev:0.1.0
+
+docker run -dti --hostname polling_digitraffic --name container_polling_digitraffic --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/polling_digitraffic.sh" tracking_dev:0.1.0
+
+docker run -dti --hostname data_process --name container_data_process --network alpine-net -e "RABBIT_HOST=container_rabbit" -v /mnt/disk2/experiments/maritime_tracking:/maritime_tracking --entrypoint "/maritime_tracking/src/data_process.sh" tracking_dev:0.1.0
+
+
+
+docker network connect alpine-net container_polling_quakes
+
+
+
+-e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" 
+-e "POLLING_SOURCE=/maritime_tracking/src/configuration/usgs_quakes_all_hour.json"
+-e "AUTOCLONING=True"
+
+docker run -d --hostname rabbit_host --name container_rabbit --network alpine-net --publish 15672:15672 --publish 5672:5672 --mount source=vol_rabbitmq,target=/var/lib/rabbitmq rabbitmq:3.8.3-management-alpine
+
+docker run -dti --hostname polling_quakes --name container_polling_quakes --network alpine-net -e "POLLING_SCRIPT=/maritime_tracking/src/polling_proxy/polling_proxy.py" -e "POLLING_SOURCE=/maritime_tracking/src/configuration/usgs_quakes_all_hour.json" -e "RABBIT_HOST=container_rabbit" "AUTOCLONING=True" tracking_prod:0.0.0
+
+docker run -ti --hostname data_process --name container_data_process --network alpine-net -e "POLLING_SCRIPT=/maritime_tracking/src/data_process/data_process.py" -e "POLLING_SOURCE=/maritime_tracking/src/configuration/data_processor.json" -e "RABBIT_HOST=container_rabbit" "AUTOCLONING=True" tracking_prod:0.0.0
+
+
+docker run -ti --hostname data_process_dev --name container_data_process_dev --network alpine-net -e "POLLING_SCRIPT=/maritime_tracking/src/data_process/data_process.py" -e "POLLING_SOURCE=/maritime_tracking/src/configuration/data_processor.json" -e "RABBIT_HOST=container_rabbit" -e "AUTOCLONING=True" tracking_dev:0.0.0
+
+#############################
+
+cd /mnt/disk2/experiments/maritime_tracking/docker_images/compose_maritime_app
+docker-compose -f docker_compose_app2.yml up -d
+
+docker-compose -f docker_compose_app2.yml down
 
 #############################
 
@@ -153,6 +199,12 @@ docker run --link elastic_single_node:elasticsearch -p 5601:5601 docker.elastic.
 
 
 
+https://markheath.net/post/exploring-elasticsearch-with-docker
+
+
+
+#########################################################################
+source for docker multinode elasticsearch
 https://markheath.net/post/exploring-elasticsearch-with-docker
 
 

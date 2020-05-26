@@ -1,0 +1,64 @@
+version: '2.2'
+services:
+  es_master:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    container_name: es_master
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata_master:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+
+  es_data_0:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    container_name: es_data_0
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es_master"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata_data_0:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  es_data_1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    container_name: es_data_1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es_master"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata_data_1:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+volumes:
+  esdata_master:
+    driver: local
+  esdata_data_0:
+    driver: local
+  esdata_data_1:
+    driver: local
+
+networks:
+  esnet:
